@@ -284,6 +284,14 @@ pub extern "C" fn rust_engine_create() -> *mut Engine {
 }
 
 #[no_mangle]
+/// Destroys an engine allocated by [`rust_engine_create`].
+///
+/// # Safety
+///
+/// `engine` must be null or a live pointer returned by
+/// [`rust_engine_create`] that has not already been destroyed. After a
+/// non-null call returns, the pointer and every view derived from it are
+/// invalid and must not be used again.
 pub unsafe extern "C" fn rust_engine_destroy(engine: *mut Engine) {
     if !engine.is_null() {
         drop(Box::from_raw(engine));
@@ -291,6 +299,13 @@ pub unsafe extern "C" fn rust_engine_destroy(engine: *mut Engine) {
 }
 
 #[no_mangle]
+/// Replaces the control input consumed by later ticks.
+///
+/// # Safety
+///
+/// `engine` must be null or point to a live, uniquely mutable engine
+/// returned by [`rust_engine_create`]. No other thread or host callback
+/// may access the same engine while this function executes.
 pub unsafe extern "C" fn rust_engine_set_control_input(engine: *mut Engine, input: ControlInput) {
     if let Some(engine) = engine.as_mut() {
         engine.set_input(input);
@@ -298,6 +313,13 @@ pub unsafe extern "C" fn rust_engine_set_control_input(engine: *mut Engine, inpu
 }
 
 #[no_mangle]
+/// Advances the authoritative simulation and synchronously emits one tick event.
+///
+/// # Safety
+///
+/// `engine` must be null or point to a live, uniquely mutable engine.
+/// Any registered callback and its `user_data` must remain valid for the
+/// complete duration of this call and must obey its host-language ABI.
 pub unsafe extern "C" fn rust_engine_tick(engine: *mut Engine, dt_seconds: f32) {
     if let Some(engine) = engine.as_mut() {
         engine.tick(dt_seconds);
@@ -305,6 +327,14 @@ pub unsafe extern "C" fn rust_engine_tick(engine: *mut Engine, dt_seconds: f32) 
 }
 
 #[no_mangle]
+/// Registers or replaces the synchronous Rust-to-host event callback.
+///
+/// # Safety
+///
+/// `engine` must be null or point to a live, uniquely mutable engine.
+/// When `callback` is present, the function pointer must use the declared
+/// C ABI and `user_data` must remain valid for every later callback until
+/// the callback is cleared, replaced, or the engine is destroyed.
 pub unsafe extern "C" fn rust_engine_set_event_callback(
     engine: *mut Engine,
     callback: Option<EngineEventCallback>,
@@ -316,6 +346,11 @@ pub unsafe extern "C" fn rust_engine_set_event_callback(
 }
 
 #[no_mangle]
+/// Clears the registered host callback without invoking it.
+///
+/// # Safety
+///
+/// `engine` must be null or point to a live, uniquely mutable engine.
 pub unsafe extern "C" fn rust_engine_clear_event_callback(engine: *mut Engine) {
     if let Some(engine) = engine.as_mut() {
         engine.clear_event_callback();
@@ -323,6 +358,12 @@ pub unsafe extern "C" fn rust_engine_clear_event_callback(engine: *mut Engine) {
 }
 
 #[no_mangle]
+/// Copies the current render state out of the engine.
+///
+/// # Safety
+///
+/// `engine` must be null or point to a live engine for the duration of
+/// this call. A non-null engine must not be concurrently mutated.
 pub unsafe extern "C" fn rust_engine_render_state(engine: *const Engine) -> EarthRenderState {
     engine
         .as_ref()
@@ -331,6 +372,14 @@ pub unsafe extern "C" fn rust_engine_render_state(engine: *const Engine) -> Eart
 }
 
 #[no_mangle]
+/// Borrows the Rust-owned surface-patch array for host rendering.
+///
+/// # Safety
+///
+/// `engine` must be null or point to a live engine. For a non-null
+/// result, the host must treat `ptr` as read-only, must not free it, and
+/// must not retain or dereference it after the next engine mutation or
+/// after [`rust_engine_destroy`].
 pub unsafe extern "C" fn rust_engine_surface_patches(engine: *const Engine) -> SurfacePatchView {
     engine
         .as_ref()
