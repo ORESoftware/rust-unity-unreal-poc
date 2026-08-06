@@ -1,0 +1,17 @@
+cmake_minimum_required(VERSION 3.24)
+project(unreal_unity_defold LANGUAGES CXX)
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
+add_library(rust_engine_session STATIC src/RustEngineSession.cpp)
+target_include_directories(rust_engine_session PUBLIC include src)
+target_compile_options(rust_engine_session PRIVATE $<$<CXX_COMPILER_ID:GNU,Clang>:-Wall;-Wextra;-Wpedantic;-Werror>)
+
+include(CTest)
+if(BUILD_TESTING)
+  add_executable(session_test tests/session_test.cpp tests/fake_rust_engine.cpp)
+  target_link_libraries(session_test PRIVATE rust_engine_session)
+  target_compile_options(session_test PRIVATE $<$<CXX_COMPILER_ID:GNU,Clang>:-Wall;-Wextra;-Wpedantic;-Werror>)
+  add_test(NAME session_test COMMAND session_test)
+endif()

@@ -1,34 +1,21 @@
 # Cocos2d-x Renderer
 
-Cocos2d-x renders the Rust-owned earth state through native C++ scene/layer code.
+This repository owns the Cocos2d-x adapter for the shared Rust simulation in [`unreal-unity-poc/rust-engine`](https://github.com/unreal-unity-poc/rust-engine).
 
-Hot-path frame data should flow as:
+## Hot path
 
 ```text
-Cocos2d-x input -> C++ ControlInput -> Rust tick -> Rust callback -> Cocos2d-x draw/update
+Cocos2d-x input -> RustEarthController -> rust_engine_tick -> callback/state -> Cocos2d-x draw/update
 ```
 
-Cocos2d-x is useful as a lightweight native C++ game-engine comparison. It can
-exercise the same Rust C ABI path as Unreal, CryEngine, O3DE, and Qt while
-staying closer to a compact game loop.
+The checked-in C++ controller is engine-independent and fully testable without downloading Cocos2d-x. A Cocos scene/layer can own one controller, forward keyboard/touch input, and render the returned `EarthRenderState` and `SurfacePatchView`.
 
-Build the native library before opening the Cocos2d-x project:
+## Validate
 
 ```bash
-../scripts/build_native_plugin.sh
+cmake -S . -B build -G Ninja
+cmake --build build
+ctest --test-dir build --output-on-failure
 ```
 
-Expected output:
-
-- Blue projected or mesh-backed earth.
-- Green Rust-owned surface patches.
-- Atmosphere shell or glow where the renderer supports it.
-
-Notes:
-
-- This folder is currently a scaffold; Cocos2d-x project files are still to be added.
-- Cocos2d-x is 2D-first, so the first pass can render the globe as a projected view.
-
-Reference:
-
-- Cocos2d-x getting started: https://docs.cocos.com/cocos2d-x/manual/en/about/getting_started.html
+The test target links a deterministic fake implementation of the Rust C ABI. Production builds link the dynamic/static library built by `unreal-unity-poc/rust-engine`.

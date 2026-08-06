@@ -1,28 +1,32 @@
 # Bevy Renderer
 
-Bevy renders the Rust-owned earth state through a Rust-native ECS/rendering path.
+Bevy renders the shared Rust-owned earth state through a Rust-native ECS/rendering path.
 
-Preferred hot path:
+## Integration path
 
 ```text
-Bevy input system -> rust-engine crate tick -> Bevy systems/resources -> Bevy renderer
+Bevy input system -> rust-engine tick -> Bevy systems/resources -> Bevy renderer
 ```
 
-This target is not native C FFI by default. Its value is the Rust-to-Rust
-comparison: no managed boundary, no dynamic library loading, and no C callback
-shim unless an optional ABI comparison mode is added later.
+This target is the Rust-to-Rust comparison in the `unreal-unity-poc` portfolio: no managed boundary, dynamic-library loading, or C callback shim is required for the default path. An optional ABI-backed mode can be added later for direct comparison with the C/C++ and C# hosts.
 
-Expected output:
+The authoritative simulation and FFI contracts live in [`unreal-unity-poc/rust-engine`](https://github.com/unreal-unity-poc/rust-engine). The coordinated integration workspace lives in [`unreal-unity-poc/unreal-unity-monorepo`](https://github.com/unreal-unity-poc/unreal-unity-monorepo).
 
-- Blue earth mesh.
+## Expected output
+
+- Blue earth mesh driven by Rust-owned transform state.
 - Green Rust-owned surface patches.
 - Atmosphere shell or glow.
+- Keyboard input routed into the authoritative Rust simulation before rendering.
 
-Notes:
+## Run
 
-- This folder is currently a scaffold; Bevy `Cargo.toml` and systems are still to be added.
-- If an apples-to-apples mode is needed later, add a second Bevy path that loads the C ABI dynamically.
+```bash
+cargo run
+```
 
-Reference:
+Controls: arrow keys rotate, Page Up/Page Down zoom, and R resets the shared simulation.
 
-- Bevy plugins: https://bevy.org/learn/quick-start/getting-started/plugins/
+## Repository role
+
+This standalone repository is the canonical Bevy deployable/demo unit. The monorepo may mirror or pin it for cross-renderer comparison, but releases and issues for this renderer belong here.

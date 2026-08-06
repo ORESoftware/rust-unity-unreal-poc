@@ -1,35 +1,13 @@
-# O3DE Renderer
+# O3DE Rust Earth Gem
 
-Open 3D Engine renders the Rust-owned earth state through a native C++ Gem.
+This repository owns the Open 3D Engine adapter for the authoritative simulation in `unreal-unity-poc/rust-engine`.
 
-Hot-path frame data should flow as:
-
-```text
-O3DE input component -> C++ ControlInput -> Rust tick -> Rust callback -> O3DE mesh/material update
-```
-
-The target integration shape is a runtime Gem that loads the staged Rust dynamic
-library, resolves the C ABI from `rust-engine/include/rust_engine.h`, registers
-`rust_engine_set_event_callback`, and updates an entity with globe mesh,
-surface-patch instances, camera, and light.
-
-Build the native library before wiring the Gem into an O3DE project:
+The checked-in C++ client owns one opaque Rust engine instance, forwards normalized input, ticks the Rust simulation, and exposes the resulting earth state and surface-patch view to an O3DE Gem component. The core layer is tested without downloading the full O3DE SDK.
 
 ```bash
-../scripts/build_native_plugin.sh
+cmake -S . -B build -G Ninja
+cmake --build build
+ctest --test-dir build --output-on-failure
 ```
 
-Expected output:
-
-- Blue earth mesh.
-- Green Rust-owned surface patches.
-- Atmosphere shell or glow.
-
-Notes:
-
-- O3DE is a strong fit because Gem modules are native C++ runtime modules.
-- This folder is currently a scaffold; the actual Gem project files are still to be added.
-
-Reference:
-
-- O3DE Gem module system: https://docs.o3de.org/docs/user-guide/programming/gems/overview/
+Register this repository as a Gem with `o3de register --gem-path "$PWD"`, then link the platform-specific `rust_engine` library in the consuming project.

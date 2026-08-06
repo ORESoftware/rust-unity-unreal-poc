@@ -1,0 +1,9 @@
+[project]
+title = Rust Earth Defold Renderer
+
+[bootstrap]
+main_collection = /main/main.collectionc
+
+[display]
+width = 1280
+height = 720

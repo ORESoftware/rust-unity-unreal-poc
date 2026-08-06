@@ -1,0 +1,26 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  dotnet:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            10.0.x
+      - name: Build reusable interop library
+        run: dotnet build src/RustEngine.Interop/RustEngine.Interop.csproj --configuration Release
+      - name: Validate native ABI contract
+        run: dotnet run --project tests/InteropContract/InteropContract.csproj --configuration Release
+      - name: Build Stride 4.3 integration sample
+        run: dotnet build samples/Stride/StrideIntegration.csproj --configuration Release

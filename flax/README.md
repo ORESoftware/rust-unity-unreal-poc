@@ -1,35 +1,20 @@
 # Flax Renderer
 
-Flax renders the Rust-owned earth state through a native C++ script/module or a
-C# script using P/Invoke.
+This repository owns the Flax C# adapter for the authoritative simulation in [`unreal-unity-poc/rust-engine`](https://github.com/unreal-unity-poc/rust-engine).
 
-Preferred hot path:
+## Hot path
 
 ```text
-Flax input -> C++ ControlInput -> Rust tick -> Rust callback -> Flax actor/material update
+Flax input -> RustEngineSession -> C ABI -> Rust tick -> EarthRenderState -> Flax actor/materials
 ```
 
-The first implementation should use native C++ scripting when possible because
-it gives direct engine API access while preserving the same Rust C ABI used by
-Unreal, CryEngine, O3DE, and Cocos2d-x. A C# script path can be kept as a
-managed comparison against Unity, Godot C#, Stride, and MonoGame.
+`src/RustEngine.Interop` is a standalone, SDK-independent .NET library containing exact `StructLayout` definitions, native imports, safe-handle ownership, input clamping, and render-state access. `samples/Flax/RustEarthActor.cs` shows the Flax script boundary without forcing CI to download the Flax editor SDK.
 
-Build the native library before opening the Flax project:
+## Validate
 
 ```bash
-../scripts/build_native_plugin.sh
+dotnet build src/RustEngine.Interop/RustEngine.Interop.csproj --configuration Release
+dotnet run --project tests/InteropContract/InteropContract.csproj --configuration Release
 ```
 
-Expected output:
-
-- Blue earth actor or mesh.
-- Green Rust-owned surface patches.
-- Atmosphere shell or glow.
-
-Notes:
-
-- This folder is currently a scaffold; Flax project files and scripts are still to be added.
-
-Reference:
-
-- Flax C++ scripting: https://docs.flaxengine.com/manual/scripting/cpp/index.html
+The contract test verifies every native struct size and field offset expected by Rust/C/C++ hosts. Runtime smoke tests require the platform-specific `rust_engine` dynamic library beside the Flax executable.

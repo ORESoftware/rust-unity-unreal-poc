@@ -1,0 +1,25 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  core:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install build dependencies
+        run: sudo apt-get update && sudo apt-get install -y cmake ninja-build g++
+      - name: Configure
+        run: cmake -S . -B build -G Ninja
+      - name: Build
+        run: cmake --build build
+      - name: Test
+        run: ctest --test-dir build --output-on-failure
+      - name: Validate Defold extension files
+        run: python -c "from pathlib import Path; required=['extension/rust_engine/ext.manifest','extension/rust_engine/src/rust_engine_ext.cpp','game.project']; missing=[p for p in required if not Path(p).is_file()]; assert not missing, missing"

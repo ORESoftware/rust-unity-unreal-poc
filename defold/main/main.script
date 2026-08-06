@@ -1,0 +1,10 @@
+function init(self)
+    self.input = { rotate_x = 0, rotate_y = 0, zoom = 0, reset = false }
+end
+
+function update(self, dt)
+    local state = rust_engine.tick(dt, self.input)
+    -- Map state.rotation_x/state.rotation_y and state.camera_distance into the
+    -- active render script or model transforms. Rust remains authoritative.
+    self.last_state = state
+end

@@ -1,34 +1,20 @@
 # MonoGame Renderer
 
-MonoGame renders the Rust-owned earth state through a C# game loop using
-P/Invoke.
+A runnable MonoGame DesktopGL host for the authoritative Rust simulation in [`unreal-unity-poc/rust-engine`](https://github.com/unreal-unity-poc/rust-engine).
 
-Hot-path frame data should flow as:
+## Hot path
 
 ```text
-MonoGame input -> C# ControlInput -> Rust tick -> Rust callback -> MonoGame draw calls
+MonoGame keyboard -> ControlInput -> Rust C ABI -> EarthRenderState -> SpriteBatch
 ```
 
-MonoGame is a useful lower-overhead C# game framework comparison. It will not
-exercise a heavy editor pipeline, but it can measure managed P/Invoke, callback
-handling, content loading, and draw-loop cost in a compact target.
+The sample renders a generated blue globe texture and applies the Rust-owned rotation and camera-distance state every frame. The native library is never reimplemented in C#: build `rust-engine` and place `rust_engine.dll`, `librust_engine.so`, or `librust_engine.dylib` beside the executable.
 
-Build the native library before running the MonoGame project:
+## Run
 
 ```bash
-../scripts/build_native_plugin.sh
+dotnet restore
+dotnet run --project src/MonoGameRustEarth/MonoGameRustEarth.csproj
 ```
 
-Expected output:
-
-- Blue projected or mesh-backed earth.
-- Green Rust-owned surface patches.
-- Atmosphere shell or glow.
-
-Notes:
-
-- This folder is currently a scaffold; MonoGame project files are still to be added.
-
-Reference:
-
-- MonoGame documentation: https://docs.monogame.net/
+Controls: arrow keys rotate, Page Up/Page Down zoom, and R resets.

@@ -1,35 +1,21 @@
 # Defold Renderer
 
-Defold renders the Rust-owned earth state through a native extension that exposes
-Rust state to Lua and the render script.
+This repository owns the Defold native-extension adapter for the shared Rust simulation in [`unreal-unity-poc/rust-engine`](https://github.com/unreal-unity-poc/rust-engine).
 
-Hot-path frame data should flow as:
+## Hot path
 
 ```text
-Defold input -> Lua/native extension ControlInput -> Rust tick -> Rust callback -> Defold render script
+Defold input -> Lua module -> native extension -> rust_engine_tick -> state table -> render script
 ```
 
-The target integration shape is a C/C++ native extension that loads or links the
-Rust dynamic library, resolves the C ABI from `rust-engine/include/rust_engine.h`,
-and passes compact state into Defold's Lua/render pipeline.
+The native extension keeps the Rust engine opaque, accepts normalized control input, and returns the authoritative earth render state. The C++ ownership layer is tested independently from the Defold SDK; `extension/rust_engine/src/rust_engine_ext.cpp` is the Defold binding.
 
-Build the native library before wiring the extension into a Defold project:
+## Validate the SDK-independent core
 
 ```bash
-../scripts/build_native_plugin.sh
+cmake -S . -B build -G Ninja
+cmake --build build
+ctest --test-dir build --output-on-failure
 ```
 
-Expected output:
-
-- Blue projected or mesh-backed earth.
-- Green Rust-owned surface patches.
-- Atmosphere shell or glow where the render pipeline supports it.
-
-Notes:
-
-- This folder is currently a scaffold; Defold project and extension files are still to be added.
-- Defold is 2D-first, so the initial renderer may use a projected globe before deeper 3D rendering.
-
-Reference:
-
-- Defold native extensions: https://defold.com/manuals/extensions/
+To package the actual extension, make the `rust_engine` dynamic/static library available to Defold's build servers or vendor an approved prebuilt per target platform.

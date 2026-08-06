@@ -1,0 +1,17 @@
+name: ci
+on:
+  push:
+    branches: [main]
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  adapter:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update && sudo apt-get install -y cmake ninja-build g++
+      - run: python -m json.tool gem.json >/dev/null
+      - run: cmake -S . -B build -G Ninja
+      - run: cmake --build build
+      - run: ctest --test-dir build --output-on-failure

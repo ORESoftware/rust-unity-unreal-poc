@@ -1,0 +1,14 @@
+{
+  "gem_name": "RustEarth",
+  "version": "0.1.0",
+  "display_name": "Rust Earth Renderer",
+  "license": "MIT",
+  "origin": "unreal-unity-poc",
+  "type": "Code",
+  "summary": "O3DE adapter for a Rust-owned simulation and render-state ABI.",
+  "canonical_tags": ["Gem", "Simulation", "Rust", "Rendering"],
+  "user_tags": ["Rust", "FFI", "Earth"],
+  "requirements": "Build the rust_engine native library for the target platform.",
+  "documentation_url": "https://github.com/unreal-unity-poc/o3de",
+  "repo_uri": "https://github.com/unreal-unity-poc/o3de"
+}

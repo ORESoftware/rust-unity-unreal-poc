@@ -1,34 +1,20 @@
 # Stride Renderer
 
-Stride renders the Rust-owned earth state through C# scripts using P/Invoke.
+This repository owns the Stride adapter for the authoritative simulation in [`unreal-unity-poc/rust-engine`](https://github.com/unreal-unity-poc/rust-engine).
 
-Hot-path frame data should flow as:
+## Hot path
 
 ```text
-Stride input -> C# ControlInput -> Rust tick -> Rust callback -> Stride entity/material update
+Stride input -> RustEarthSyncScript -> RustEngineSession -> C ABI -> EarthRenderState -> entity transforms
 ```
 
-Stride is useful as a managed, open-source C# engine comparison against Unity
-and Godot C#. The implementation should share as much managed ABI binding shape
-as possible with the Unity and Godot targets while keeping Stride-specific
-rendering code isolated.
+`src/RustEngine.Interop` is an SDK-independent managed library with exact native struct layouts, safe ownership, bounded inputs, and state access. `samples/Stride/RustEarthSyncScript.cs` is the Stride `SyncScript` boundary. CI validates the interop contract without requiring a graphical editor installation.
 
-Build the native library before opening the Stride project:
+## Validate
 
 ```bash
-../scripts/build_native_plugin.sh
+dotnet build src/RustEngine.Interop/RustEngine.Interop.csproj --configuration Release
+dotnet run --project tests/InteropContract/InteropContract.csproj --configuration Release
 ```
 
-Expected output:
-
-- Blue earth entity.
-- Green Rust-owned surface patches.
-- Atmosphere shell or glow.
-
-Notes:
-
-- This folder is currently a scaffold; Stride project files and scripts are still to be added.
-
-Reference:
-
-- Stride scripts: https://doc.stride3d.net/latest/en/manual/scripts/index.html
+The stable Stride 4.3 line is the initial integration target. Runtime tests require a Stride project plus the target-platform `rust_engine` native library.
